@@ -17,19 +17,24 @@ class MainActivity : AppCompatActivity() {
             .setRequiresCharging(true)
             .build()
 
-        val work = OneTimeWorkRequestBuilder<CompressWork>()
+        val inputData = Data.Builder().putAll(mapOf("file_name" to "sdcard/user_choice_picture.jpg")).build()
+        val compressWork = OneTimeWorkRequestBuilder<CompressWork>()
+            .setInputData(inputData)
+            .build()
+        val uploadWork = OneTimeWorkRequestBuilder<UploadWork>()
             .setConstraints(constraints)
             .build()
 
         WorkManager.getInstance().let {
-//            it.beginWith(work).then(work).enqueue()
-            it.enqueue(work)
+            it.beginWith(compressWork).then(uploadWork).enqueue()
+//            it.enqueue(compressWork)
 
-            it.getWorkInfoByIdLiveData(work.id)
+            it.getWorkInfoByIdLiveData(uploadWork.id)
                 .observe(this, Observer {workInfo ->
                 if(workInfo != null && workInfo.state.isFinished){
                     Log.d("hoho", "끝")
                     Log.d("hoho", "$workInfo")
+                    Log.d("hoho", "${workInfo.outputData}")
                 }
             })
         }
